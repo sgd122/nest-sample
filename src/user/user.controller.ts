@@ -11,10 +11,13 @@ import {
   UsePipes,
   ValidationPipe,
   ParseUUIDPipe,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { User } from 'src/entity/user.entity';
+import { LocalAuthGuard } from '../auth/guard/local-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -31,7 +34,8 @@ export class UserController {
    *
    * CreateUserDto를 사용해서 @Body 전달 방식을 변경합니다.
    *
-   * @param createUserDto
+   * @param id 유저 고유 아이디
+   * @param name 유저 이름
    */
   @Post('/create_user')
   @UsePipes(ValidationPipe)
@@ -75,7 +79,7 @@ export class UserController {
    * @description @Param & @Body 혼합 방식 - 단일 유저 수정
    *
    * @param id 유저 고유 아이디
-   * @param updateUserDto
+   * @param name 유저 이름
    */
   @Patch('/user/:id')
   @UsePipes(ValidationPipe)
@@ -107,5 +111,13 @@ export class UserController {
   @Delete('/user/delete')
   deleteUser(@Query('id', ParseUUIDPipe) id: string): Promise<boolean> {
     return this.userService.deleteUser(id);
+  }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('/auth/login')
+  async login(@Request() req) {
+    console.log('Login Route');
+
+    return req.user;
   }
 }
